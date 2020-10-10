@@ -1,0 +1,91 @@
+managed; // implementation in class zbp_cd_i_travel_m unique;
+
+define behavior for ZCD_I_TRAVEL_M alias Travel
+implementation in class zcl_bp_travel unique
+persistent table ztb_travel_m
+with additional save
+lock master
+authorization master ( instance )
+etag master last_changed_at
+{
+  // administrative fields: read only
+  field ( readonly ) last_changed_at, last_changed_by, created_at, created_by;
+  // mandatory fields that are required to create a travel
+  field ( mandatory : create ) agency_id, overall_status, booking_fee, customer_id;
+  // dynamic field control
+  field ( features : instance ) travel_id;
+
+  mapping for ztb_travel_m corresponding;
+
+  create;
+  update;
+  delete;
+
+  //instance actions
+  action ( features : instance ) acceptTravel result [1] $self;
+  action ( features : instance ) rejectTravel result [1] $self;
+
+  action createTravelByTemplate result [1] $self;
+
+  //validations
+  validation validateCustomer on save { create; field customer_id; }
+  validation validateDates on save { create; field begin_date, end_date; }
+  validation validateStatus on save { create; field overall_status; }
+
+  association _Booking
+  { create; } // ( features : instance ); }
+  }
+
+
+  define behavior for ZCD_I_BOOKING_M alias Booking
+  implementation in class zcl_bp_booking unique
+  persistent table ztb_booking_m
+  lock dependent by _Travel
+  authorization dependent by _Travel
+  etag master last_changed_at
+  {
+
+    // static field control
+    field ( mandatory : create ) carrier_id, connection_id, flight_date, booking_status;
+    field ( readonly ) travel_id;
+
+    mapping for ztb_booking_m corresponding;
+
+    // dynamic field control
+    field ( features : instance ) booking_id, booking_date, customer_id;
+
+    update;
+    delete;
+
+    //validations
+    validation validateStatus on save { create; field booking_status; }
+
+    determination calculateTotalFlightPrice on modify
+    { field flight_price, currency_code; }
+
+      //    association _BookSupplement { create; }
+      association _BookSupplement { create ( features : instance ); }
+      association _Travel { }
+    }
+
+    define behavior for ZCD_I_BOOKSUPPL_M alias Supplement
+    implementation in class zcl_bp_supplement unique
+    with unmanaged save
+    lock dependent by _Travel
+    authorization dependent by _Travel
+    etag master last_changed_at
+    {
+      //static field control
+      field ( mandatory : create ) supplement_id, price;
+      field ( readonly ) travel_id, booking_id;
+
+      mapping for ztb_booksuppl_m corresponding;
+
+      //    create;
+      update;
+      delete;
+
+      determination calculateTotalSupplimPrice on modify { field price, currency_code; }
+      association _Travel
+      { }
+    }

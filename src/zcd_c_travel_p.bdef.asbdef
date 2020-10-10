@@ -1,0 +1,33 @@
+projection;
+
+define behavior for ZCD_C_TRAVEL_P alias TravelProccesor
+{
+  use create;
+  use update;
+  use delete;
+
+  use action acceptTravel;
+  use action rejectTravel;
+  use action createTravelByTemplate;
+
+  use association _Booking { create; }
+
+}
+
+define behavior for ZCD_C_BOOKING_P alias BookingProccesor
+{
+  use update;
+  //  use delete;
+
+  use association _BookSupplement { create; }
+  use association _Travel;
+}
+
+define behavior for zcd_c_booksuppl_p alias SupplementProcessor
+{
+//  use create;
+  use update;
+  use delete;
+
+  use association _Travel;
+}

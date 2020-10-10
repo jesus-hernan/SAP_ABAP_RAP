@@ -1,0 +1,21 @@
+projection;
+
+define behavior for ZCD_C_TRAVEL_A alias TravelApprover
+use etag
+{
+  //  use create;
+  //  use update;
+  //  use delete;
+
+  use action acceptTravel;
+  use action rejectTravel;
+  use action createTravelByTemplate;
+
+  //  use association _Booking { create; }
+}
+
+//define behavior for zcd_c_booking_a //alias <alias_name>
+//{
+//  use update;
+//  use delete;
+//}
